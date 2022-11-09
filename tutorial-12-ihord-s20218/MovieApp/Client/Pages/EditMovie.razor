@@ -1,0 +1,65 @@
+﻿@page "/movies/edit/{IdMovie:int}"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@attribute [Authorize]
+@inject HttpClient httpClient
+@inject NavigationManager manager
+@using System.Text
+@using MovieApp.Shared.DTOs
+
+<h1>Edit</h1>
+
+<h4>Movie</h4>
+@if (Movie != null)
+{
+<form>
+    <label for="movie.Title">Title:</label><br>
+    <input @bind="Movie.Title" type="text"><br>
+    <label for="movie.Summary">Summary:</label><br>
+    <input @bind="Movie.Summary" type="text"><br>
+    <label for="movie.InTheaters">In Theaters:</label><br>
+    <input @bind="Movie.InTheaters" type="checkbox"><br>
+    <label for="movie.Trailer">Trailer:</label><br>
+    <input @bind="Movie.Trailer" type="text"><br>
+    <label for="movie.ReleaseDate">Release date:</label><br>
+    <input @bind="Movie.ReleaseDate" type="date"><br>
+    <label for="movie.Poster">Poster:</label><br>
+    <input @bind="Movie.Poster" type="text"><br>
+    <button @onclick="@(async() => { await EditAsync(); Navigate(); })">
+        Submit
+    </button>
+</form>
+}
+
+@code {
+    [Parameter]
+    public int IdMovie { get; set; }
+
+    private Movie Movie;
+    protected async override Task OnInitializedAsync()
+    {
+        var responseHTTP = await httpClient.GetAsync("https://localhost:44311/api/movies/" + IdMovie);
+
+        if (responseHTTP.IsSuccessStatusCode)
+        {
+            var responseString = await responseHTTP.Content.ReadAsStringAsync();
+            Movie = System.Text.Json.JsonSerializer.Deserialize<Movie>(responseString, new System.Text.Json.JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+        }
+        else
+        {
+            //error
+        }
+    }
+
+    private async Task EditAsync()
+    {
+        var jsonString = System.Text.Json.JsonSerializer.Serialize(Movie);
+        var jsonContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
+        var httpResponse = await httpClient.PutAsync("https://localhost:44311/api/movies/" + IdMovie, jsonContent);
+    }
+
+    private void Navigate()
+    {
+        manager.NavigateTo("/movies");
+    }
+}

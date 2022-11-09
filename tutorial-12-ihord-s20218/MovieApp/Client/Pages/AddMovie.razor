@@ -1,0 +1,50 @@
+﻿@page "/movies/create"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@attribute [Authorize]
+@inject HttpClient httpClient
+@inject NavigationManager manager
+@using System.Text
+@using MovieApp.Shared.DTOs
+
+<h1>Create</h1>
+
+<h4>Movie</h4>
+<form>
+    <label for="movie.Title">Title:</label><br>
+    <input @bind="movie.Title" type="text"><br>
+    <label for="movie.Summary">Summary:</label><br>
+    <input @bind="movie.Summary" type="text"><br>
+    <label for="movie.InTheaters">In Theaters:</label><br>
+    <input @bind="movie.InTheaters" type="checkbox"><br>
+    <label for="movie.Trailer">Trailer:</label><br>
+    <input @bind="movie.Trailer" type="text"><br>
+    <label for="movie.ReleaseDate">Release date:</label><br>
+    <input @bind="movie.ReleaseDate" type="date"><br>
+    <label for="movie.Poster">Poster:</label><br>
+    <input @bind="movie.Poster" type="text"><br>
+    <button @onclick="@(async()=>{ await Add(); Navigate(); })">
+         Add
+    </button>
+</form>
+
+@code {
+
+    private MovieAdderDto movie;
+    protected async override Task OnInitializedAsync()
+    {
+        movie = new MovieAdderDto();
+    }
+
+    private async Task Add()
+    {
+        var jsonString = System.Text.Json.JsonSerializer.Serialize(movie);
+        var jsonContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
+        var responseHTTP = await httpClient.PostAsync("https://localhost:44311/api/movies", jsonContent);
+    }
+
+    private void Navigate()
+    {
+        manager.NavigateTo("/movies");
+    }
+}

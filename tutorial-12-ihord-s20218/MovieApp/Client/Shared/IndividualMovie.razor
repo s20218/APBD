@@ -1,0 +1,66 @@
+﻿@inject NavigationManager manager
+@inject IJSRuntime js
+@inject HttpClient httpClient
+
+@if (Movie != null)
+{
+    <div class="individual-movie-container">
+        <a @onclick="@(() => NavigateToEdit(Movie.Id))">
+            <img src="@Movie.Poster" alt="Poster" class="movie-poster" />
+        </a>
+        <p><a>@Movie.TitleBrief</a></p>
+        <div>
+            @*<a class="btn btn-info" href="/movies/edit/@Movie.Id">Edit</a>*@
+            <button type="button" class="btn btn-danger"
+                    @onclick="@(() => NavigateToEdit(Movie.Id))">
+                Edit
+            </button>
+            <button type="button" class="btn btn-danger"
+                    @onclick="@(async() => { await Delete(Movie.Id); Navigate(); })">
+                Delete
+            </button>
+        </div>
+    </div>
+}
+else
+{
+    <p>no movies</p>
+}
+
+
+@code {
+    [Parameter] public Movie Movie { get; set; }
+    [Parameter] public EventCallback<Movie> DeleteMovie { get; set; }
+    private string movieURL = "";
+
+    protected override void OnInitialized()
+    {
+        //if (Movie != null)
+        //{
+        //    movieURL = $"movie/{Movie.Id}/{Movie.Title.Replace(" ", "-")}";
+        //}
+    }
+
+    private void NavigateToEdit(int IdMovie)
+    {
+        manager.NavigateTo($"/movies/edit/{IdMovie}");
+    }
+
+    private async Task Delete(int IdMovie)
+    {
+        bool confirmed = await js.InvokeAsync<bool>("confirm", "confirm delete");
+
+        if (confirmed)
+        {
+            var responseHTTP = await httpClient.DeleteAsync("https://localhost:44311/api/movies/" + IdMovie);
+        }
+
+        manager.NavigateTo("/movies");
+
+    }
+
+    private void Navigate()
+    {
+        manager.NavigateTo("/movies");
+    }
+}
