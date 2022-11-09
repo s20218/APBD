@@ -1,0 +1,60 @@
+﻿@page "/details/{IdStudent:int}"
+@inject Students Students
+@inject NavigationManager manager
+
+
+<h3>Student Details</h3>
+
+@if (Student == null)
+{
+    <tr>
+        <td>
+            There is no student with the given id
+        </td>
+    </tr>
+}
+else
+{
+<table>
+    <tr>
+        <td><div class="meta_info">First name: </div><div class="info">@Student.FirstName</div></td>
+        <td>avatar</td>
+    </tr>
+    <tr>
+        <td><div class="meta_info">Last name: </div><div class="info">@Student.LastName</div></td>
+        <td rowspan="3"><img src="https://thumbs.dreamstime.com/m/default-male-avatar-profile-picture-icon-grey-man-photo-placeholder-vector-illustration-88414414.jpg" /></td>
+
+        
+    </tr>
+    <tr>
+        <td><div class="meta_info">Birthdate: </div><div class="info">@Student.Birthdate</div></td>    
+    </tr>
+    <tr>
+        <td><div class="meta_info">Studies: </div><div class="info">@Student.Studies</div></td>
+        
+    </tr>
+</table>
+<td @onclick="@(() => NavigateToStudentDetails())">
+    <button>Back</button>
+</td>
+
+}
+
+@code{
+    [Parameter]
+    public int IdStudent { get; set; }
+
+    public Student Student { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        Student = Students.ListOfStudents.FirstOrDefault(s => s.IdStudent == IdStudent);
+    }
+
+    private void NavigateToStudentDetails()
+    {
+        manager.NavigateTo("/");
+    }
+}

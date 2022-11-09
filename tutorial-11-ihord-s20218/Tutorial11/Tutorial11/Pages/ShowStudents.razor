@@ -1,0 +1,142 @@
+﻿@page "/"
+@inject NavigationManager manager
+@inject Students Students
+@inject IJSRuntime js
+
+<h3>Students</h3>
+
+@if (listOfStudents.Count == 0)
+{
+    <tr>
+        <td>
+            There are no students
+        </td>
+    </tr>
+}
+else
+{
+    <table border="1" frame="box">
+        <thead>
+            <tr>
+                <th>Avatar</th>
+                <th @onclick="@(() => SortByFirstName())">First Name</th>
+                <th @onclick="@(() => SortByLastName())">Last Name</th>
+                <th @onclick="@(() => SortByBirthDate())">Birth Date</th>
+                <th @onclick="@(() => SortByStudies())">Studies</th>
+            </tr>
+        </thead>
+
+        @foreach (var s in listOfStudents)
+        {
+            <tr>
+                <td @onclick="@(() => NavigateToStudentDetails(s.IdStudent))">
+                    <img src="https://thumbs.dreamstime.com/m/default-male-avatar-profile-picture-icon-grey-man-photo-placeholder-vector-illustration-88414414.jpg" />
+                </td>
+                <td>
+                    @s.FirstName
+                </td>
+                <td>
+                    @s.LastName
+                </td>
+                <td>
+                    @s.Birthdate
+                </td>
+                <td>
+                    @s.Studies
+                </td>
+                <td @onclick="@(() => DeleteStudent(s.IdStudent))" >
+                    <button>X</button>
+                </td>
+            </tr>
+
+        }
+    </table>
+}
+
+
+@code {
+    private List<Student> listOfStudents { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        listOfStudents = Students.ListOfStudents;
+    }
+
+    public void SortByFirstName()
+    {
+        var ordered = !listOfStudents.Zip(listOfStudents.Skip(1), (a, b) => new { a, b })
+                        .All(p => p.a.FirstName.CompareTo(p.b.FirstName) == -1);
+
+        if (ordered)
+        {
+            listOfStudents = listOfStudents.OrderBy(s => s.FirstName).ToList();
+        }
+        else
+        {
+            listOfStudents = listOfStudents.OrderByDescending(s => s.FirstName).ToList();
+        }
+    }
+
+    public void SortByLastName()
+    {
+        var ordered = !listOfStudents.Zip(listOfStudents.Skip(1), (a, b) => new { a, b })
+                       .All(p => p.a.LastName.CompareTo(p.b.LastName) == -1);
+
+        if (ordered)
+        {
+            listOfStudents = listOfStudents.OrderBy(s => s.LastName).ToList();
+        }
+        else
+        {
+            listOfStudents = listOfStudents.OrderByDescending(s => s.LastName).ToList();
+        }
+    }
+
+    public void SortByBirthDate()
+    {
+        var ordered = !listOfStudents.Zip(listOfStudents.Skip(1), (a, b) => new { a, b })
+                       .All(p => p.a.Birthdate.CompareTo(p.b.Birthdate) == -1);
+
+        if (ordered)
+        {
+            listOfStudents = listOfStudents.OrderBy(s => s.Birthdate).ToList();
+        }
+        else
+        {
+            listOfStudents = listOfStudents.OrderByDescending(s => s.Birthdate).ToList();
+        }
+    }
+
+    public void SortByStudies()
+    {
+        var ordered = !listOfStudents.Zip(listOfStudents.Skip(1), (a, b) => new { a, b })
+                        .All(p => p.a.Studies.CompareTo(p.b.Studies) == -1);
+
+        if (ordered)
+        {
+            listOfStudents = listOfStudents.OrderBy(s => s.Studies).ToList();
+        }
+        else
+        {
+            listOfStudents = listOfStudents.OrderByDescending(s => s.Studies).ToList();
+        }
+    }
+
+    private void NavigateToStudentDetails(int idStudent)
+    {
+        manager.NavigateTo($"/details/{idStudent}");
+    }
+
+    private async Task DeleteStudent(int IdStudent)
+    {
+        bool confirmed = await js.InvokeAsync<bool>("confirm", "confirm delete");
+
+        if (confirmed)
+        {
+            Student tmp = listOfStudents.First(s => s.IdStudent == IdStudent);
+            listOfStudents.Remove(tmp);
+        }
+    }
+}
